@@ -1,0 +1,9 @@
+pandas
+joblib
+flask
+scikit-learn
+gunicorn
+flask_cors
+weasyprint
+
+
