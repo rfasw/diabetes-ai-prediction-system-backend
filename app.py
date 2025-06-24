@@ -34,6 +34,26 @@ RECOMMENDATIONS = {
     ]
 }
 
+def get_encoded_logo():
+    """Try to load and encode logo image from different possible locations"""
+    possible_paths = [
+        os.path.join('assets', 'diabetes-icon1.png'),  # Relative path 1
+        os.path.join('backend', 'assets', 'diabetes-icon1.png'),  # Relative path 2
+        os.path.join(os.path.dirname(__file__), 'assets', 'diabetes-icon1.png'),  # Relative to current file
+    ]
+    
+    for logo_path in possible_paths:
+        try:
+            if os.path.exists(logo_path):
+                with open(logo_path, "rb") as image_file:
+                    return base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            print(f"Error loading logo from {logo_path}: {str(e)}")
+            continue
+    
+    print("Warning: Logo image not found, proceeding without it")
+    return None
+
 def generate_pdf_report(patient_data, prediction):
     # Get current date/time
     date_ = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -42,10 +62,9 @@ def generate_pdf_report(patient_data, prediction):
     status = prediction["status"]
     recommendations = RECOMMENDATIONS[status]
     
-    # Encode logo image from absolute path
-    logo_path = r"H:\Desktop\Deployment1\Deployment\backend\assets\diabetes-icon1.png"
-    with open(logo_path, "rb") as image_file:
-        encoded_logo = base64.b64encode(image_file.read()).decode('utf-8')
+    # Try to get encoded logo
+    encoded_logo = get_encoded_logo()
+    logo_html = f'<img class="logo" src="data:image/png;base64,{encoded_logo}" alt="Clinic Logo">' if encoded_logo else ''
     
     # Create HTML content
     html_content = f"""
@@ -173,7 +192,7 @@ def generate_pdf_report(patient_data, prediction):
     <body>
         <div class="report-card">
             <div class="header">
-                <img class="logo" src="data:image/png;base64,{encoded_logo}" alt="Clinic Logo">
+                {logo_html}
                 <div class="clinic-name">Diabetes AI Clinic</div>
                 <div>Advanced Predictive Healthcare Solutions</div>
             </div>
